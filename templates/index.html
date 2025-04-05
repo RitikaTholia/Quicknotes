@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quicknotes - AI-Powered Summarizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .logo {
+            max-width: 100px;
+            margin: 0 auto;
+            display: block;
+            border-radius: 15px;
+        }
+        form {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            width: 60%;
+            margin: 0 auto;
+        }
+        input[type="file"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .or-divider {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .or-divider::before, .or-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 10px;
+        }
+        button {
+            padding: 10px 25px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        .results {
+            margin-top: 40px;
+            text-align: left;
+            width: 80%;
+            margin: 40px auto;
+            background: rgba(255,255,255,0.15);
+            padding: 25px;
+            border-radius: 10px;
+        }
+        .results h2 {
+            color: #f1c40f;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .results-section {
+            margin-bottom: 25px;
+        }
+        .content-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+        .download-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #loading {
+            display: none; /* Initially hidden */
+            text-align: center;
+            margin-top: 20px;
+        }
+        #loading .spinner {
+            margin: auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .clear-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .clear-button:hover {
+            background-color: #c0392b;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo Section -->
+    <img src="static/Quicknotes logo.png" alt="Quicknotes Logo" class="logo">
+    <h1>Quicknotes🎙 - Audio/Video Summarizer & Q&A</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <div class="input-group">
+            <input type="file" name="file" id="file-input" accept="audio/,video/">
+            <button type="button" id="clear-file" class="clear-button" style="display:none;">×</button>
+        </div>
+
+        <div class="or-divider">OR</div>
+
+        <div class="input-group">
+            <input type="text" name="youtube_url" id="youtube-url" placeholder="Enter YouTube URL">
+            <button type="button" id="clear-url" class="clear-button" style="display:none;">×</button>
+        </div>
+
+        <button type="submit">Process</button>
+    </form>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Processing your content... Please wait!</p>
+    </div>
+
+    <div class="results" id="results" style="display:none;">
+        <div class="results-section">
+            <h2>Transcript</h2>
+            <div class="content-box" id="transcript-content"></div>
+            <a id="transcript-download" class="download-link" download>Download Transcript</a>
+        </div>
+
+        <div class="results-section">
+            <h2>Summary</h2>
+            <div class="content-box" id="summary-content"></div>
+            <a id="summary-download" class="download-link" download>Download Summary</a>
+        </div>
+
+        <div class="results-section">
+            <h2>Questions</h2>
+            <div class="content-box" id="qa-content"></div>
+            <a id="qa-download" class="download-link" download>Download Questions</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const youtubeInput = document.getElementById('youtube-url');
+        const clearFileBtn = document.getElementById('clear-file');
+        const clearUrlBtn = document.getElementById('clear-url');
+        const loadingDiv = document.getElementById('loading');
+        const resultsDiv = document.getElementById('results');
+
+        // Content display elements
+        const transcriptContent = document.getElementById('transcript-content');
+        const summaryContent = document.getElementById('summary-content');
+        const qaContent = document.getElementById('qa-content');
+
+        // Download links
+        const transcriptDownload = document.getElementById('transcript-download');
+        const summaryDownload = document.getElementById('summary-download');
+        const qaDownload = document.getElementById('qa-download');
+
+        // Show/hide clear buttons when inputs change
+        fileInput.addEventListener('change', function() {
+            clearFileBtn.style.display = this.value ? 'inline-flex' : 'none';
+            if (this.value) {
+                youtubeInput.value = '';
+                clearUrlBtn.style.display = 'none';
+            }
+        });
+
+        youtubeInput.addEventListener('input', function() {
+            clearUrlBtn.style.display = this.value ? 'inline-flex' : 'none';
+            if (this.value) {
+                fileInput.value = '';
+                clearFileBtn.style.display = 'none';
+            }
+        });
+
+        // Clear button functionality
+        clearFileBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            this.style.display = 'none';
+        });
+
+        clearUrlBtn.addEventListener('click', function() {
+            youtubeInput.value = '';
+            this.style.display = 'none';
+        });
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (!fileInput.value && !youtubeInput.value) {
+                alert('Please either upload a file or enter a YouTube URL');
+                return;
+            }
+
+            const formData = new FormData(form);
+
+            // Show the loading indicator
+            loadingDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Populate content areas with the actual text
+                transcriptContent.textContent = data.transcript_content || "No transcript available.";
+                summaryContent.textContent = data.summary_content || "No summary available.";
+
+                // Format questions as bullet points
+                const qaItems = Array.isArray(data.qa_content) ? data.qa_content : [];
+                qaContent.innerHTML = qaItems.length > 0
+                    ? qaItems.map(q => `• ${q}`).join('\n')
+                    : "No questions generated.";
+
+                // Set download links
+                transcriptDownload.href = data.transcript_file;
+                summaryDownload.href = data.summary_file;
+                qaDownload.href = data.qa_file;
+
+                // Display results
+                resultsDiv.style.display = 'block';
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error(error);
+            } finally {
+                // Hide the loading indicator
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
